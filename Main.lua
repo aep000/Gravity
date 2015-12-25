@@ -80,6 +80,7 @@ if(love.mouse.isDown(2)~=true)then
 end
 
 end
+--[[
 function placebod()
 	if(love.mouse.isDown(1)and ldown3 ~= true)then
 	m3x=love.mouse.getX()
@@ -101,7 +102,7 @@ end
 if(love.mouse.isDown(2)~=true)then
 	ldown2=false
 end
-end
+end ]]--
 function placeObj()
 if(love.mouse.isDown(3)and ldown3 ~= true)then
 	m3x=love.mouse.getX()
@@ -140,13 +141,6 @@ if(love.keyboard.isDown('m') and kdownm == false)then
 	elseif(love.keyboard.isDown('m')~=true)then
 		kdownm=false
 	end
-if(mode == "ball")then
-placeBall()
-elseif(mode == "obj")then
-placeObj()
-elseif(mode == "body")then
-placebod()
-end
 if(love.keyboard.isDown('b'))then
 	radius = radius+dt*30
 end
@@ -207,7 +201,6 @@ ballMove(dt,balls[c])
 c=c+1
 end
 end
-
 function love.draw(dt)
 love.graphics.setColor( 255, 255, 255 )
 love.graphics.print("Size:"..radius.." (B to get bigger S to get smaller)\nMode: "..mode.." M to switch",10,10)
@@ -230,5 +223,27 @@ love.graphics.setColor( 255, 0, 0 )
 while(c<=#balls)do
 	love.graphics.circle("fill", balls[c][1], balls[c][2], balls[c][3])
 	c=c+1
+end
+end
+x1,y1,x2,y2=0
+function love.mousepressed(x, y, button)
+print(overlap(x,y,radius)[1])
+
+if(mode=="ball" and button == 1 and overlap(x,y,radius)[1] ~= true)then
+	table.insert(gravpts,{x, y, radius})
+elseif(mode=="body" and button==1)then
+	x1=x
+	y1=y
+elseif(mode=="ball" and button == 2)then
+	table.remove(gravpts,#gravpts)
+elseif(mode=="body" and button == 2)then
+	table.remove(balls,#balls)
+end
+end
+function love.mousereleased(x, y, button)
+if(mode=="body" and button==1)then
+	x2=x
+	y2=y
+	table.insert(balls,{x1,y1,radius,v = vectorMake(y1-y2, x1-x2)})
 end
 end
