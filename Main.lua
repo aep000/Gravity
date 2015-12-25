@@ -31,12 +31,12 @@ gravpts = {}
 lns ={}
 balls = {{10,0,10,v=vectorMake(-50,0)}}
 ptamt=0
-GRAVCONSTANT= .867
+GRAVCONSTANT= .667
 function gravEffect(ball,c)
 	i =1
 	
 	while i <= #gravpts do
-		gvec = gravVec(ball[1],ball[2],ball[3],gravpts[i][1],gravpts[i][2],gravpts[i][3])
+		gvec = gravVec(ball[1],ball[2],ball[3]*2,gravpts[i][1],gravpts[i][2],gravpts[i][3]*2)
 		ball.v = vectorAdd(ball.v,gvec)
 		i=i+1
 	end
@@ -133,8 +133,8 @@ if(love.keyboard.isDown('m') and kdownm == false)then
 	if(mode =="ball")then
 	mode ="obj"
 	elseif(mode =="obj")then
-	mode ="bod"
-	elseif(mode =="bod")then
+	mode ="body"
+	elseif(mode =="body")then
 	mode ="ball"
 	end
 	elseif(love.keyboard.isDown('m')~=true)then
@@ -144,28 +144,25 @@ if(mode == "ball")then
 placeBall()
 elseif(mode == "obj")then
 placeObj()
-elseif(mode == "bod")then
+elseif(mode == "body")then
 placebod()
 end
 if(love.keyboard.isDown('b'))then
-	radius = radius+dt*10
+	radius = radius+dt*30
 end
 if(love.keyboard.isDown('s'))then
-	radius = radius-dt*10
+	radius = radius-dt*30
 end
 end
-function reflect(ln)
-[[--DEFUNCT--]]
+--[[function reflect(ln)
 	local b= ball[2]-(ln.invm*ball[1])
-	
 	local pt1 = {ball[1],((ln.invm)*(ball[1])+b)}
 	local v = vectorMake(pt1[1]/math.sqrt(pt1[1]^2+pt1[2]^2),pt1[2]/math.sqrt(pt1[1]^2+pt1[2])^2) 
 	local n = vectorMake(v.u/math.abs(v.u),v.l/math.abs(v.l))
 	
 	ball.v= vectorAdd(ball.v,vectorMult(n,(vectorDot(n,ball.v)*-2)))
-end
-function doesReflect()
-[[--DEFUNCT--]]
+end]]--
+--[[function doesReflect()
 	---2*(V dot N)*N + V
 	i=1
 	while i <= #lns do
@@ -179,7 +176,7 @@ function doesReflect()
 		i=i+1
 	end
 	
-end
+end]]--
 function overlap(x, y, r)
 	i = 1
 	retval = {false,0}
@@ -204,9 +201,7 @@ function love.update(dt)
 place(dt)
 local c=1
 while(c<=#balls)do
-
 gravEffect(balls[c],c)
-print("out grav")
 --doesReflect()
 ballMove(dt,balls[c])
 c=c+1
@@ -214,8 +209,9 @@ end
 end
 
 function love.draw(dt)
-i = 1
 love.graphics.setColor( 255, 255, 255 )
+love.graphics.print("Size:"..radius.." (B to get bigger S to get smaller)\nMode: "..mode.." M to switch",10,10)
+i = 1
 while i <= #gravpts do
 	if(type(gravpts[i][1])=="number")then
 	love.graphics.circle("fill", gravpts[i][1], gravpts[i][2], gravpts[i][3])
