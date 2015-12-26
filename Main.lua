@@ -185,6 +185,34 @@ function overlap(x, y, r)
 	end
 	return retval
 end
+function overlap2(x, y, r,c)
+	i = 1
+	retval = {false,0}
+	while i <= #balls do
+		if(i~=c)then
+		x1=balls[i][1]
+		y1=balls[i][2]
+		print(math.sqrt((x1-x)^2+(y1-y)^2))
+		if(math.sqrt((x1-x)^2+(y1-y)^2)<=balls[i][3]+r) then
+			retval = {true,i}
+			print("RETVAL "..retval[2])
+		end
+		end
+		i=i+1
+	end
+	return retval
+end
+function bodyCollision(i)
+	ov = overlap2(balls[i][1],balls[i][2],balls[i][3],i)
+	if(ov[1] and #balls>1)then
+	print("Here")
+		balls[i].v.u = balls[i].v.u*balls[i][3]-balls[ov[2]].v.u*balls[ov[2]][3]
+		balls[ov[2]].v.u = balls[i].v.u*balls[i][3]-balls[ov[2]].v.u*balls[ov[2]][3]
+		balls[i].v.l = balls[i].v.l*balls[i][3]-balls[ov[2]].v.l*balls[ov[2]][3]
+		balls[ov[2]].v.l = balls[i].v.l*balls[i][3]-balls[ov[2]].v.l*balls[ov[2]][3]
+	end
+	end
+		
 function love.load(arg)
 
 end
@@ -195,6 +223,7 @@ function love.update(dt)
 place(dt)
 local c=1
 while(c<=#balls)do
+bodyCollision(c)
 gravEffect(balls[c],c)
 --doesReflect()
 ballMove(dt,balls[c])
