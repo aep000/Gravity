@@ -31,24 +31,22 @@ gravpts = {}
 lns ={}
 balls = {{10,0,10,v=vectorMake(-50,0)}}
 ptamt=0
-GRAVCONSTANT= .667
+GRAVCONSTANT= .0000667
 function gravEffect(ball,c)
 	i =1
-	
 	while i <= #gravpts do
-		gvec = gravVec(ball[1],ball[2],ball[3]*2,gravpts[i][1],gravpts[i][2],gravpts[i][3]*2)
+		gvec = gravVec(ball[1],ball[2],ball[3]*ball[3]*math.pi,gravpts[i][1],gravpts[i][2],gravpts[i][3]*gravpts[i][3]*math.pi)
 		ball.v = vectorAdd(ball.v,gvec)
 		i=i+1
 	end
 	i=1
 	while(i<=#balls)do
 		if(i~=c)then
-			gvec = gravVec(ball[1],ball[2],ball[3],balls[i][1],balls[i][2],balls[i][3])
+			gvec = gravVec(ball[1],ball[2],ball[3]*ball[3]*math.pi,balls[i][1],balls[i][2],balls[i][3]*balls[i][3]*math.pi)
 			ball.v = vectorAdd(ball.v,gvec)
 		end
 		i=i+1
 	end
-	
 end
 function ballMove(dt,ball)
 	--print((ball.v.l*dt))
@@ -117,7 +115,6 @@ if(love.mouse.isDown(3) ~= true and ldown3 == true)then
 	local invm=-(nx-m3x)/(ny-m3y)
 	local b= ball[2]-(invm*ball[1])
 	dist123 = ((xmidpt-ball[1])/math.abs(xmidpt-ball[1]))*((ymidpt-ball[2])/math.abs(ymidpt-ball[2]))
-	print(dist123)
 	--v=vectorMake(pt1[1]-xmidpt,pt1[2]-ymidpt
 	table.insert(lns,{m3x,m3y, nx, ny, dist123, xmidpt=xmidpt,ymidpt=ymidpt, invm=invm})
 	--(m3y-love.mouse.getY(), m3x-love.mouse.getX())
@@ -132,8 +129,6 @@ function place(dt)
 if(love.keyboard.isDown('m') and kdownm == false)then
 	kdownm=true
 	if(mode =="ball")then
-	mode ="obj"
-	elseif(mode =="obj")then
 	mode ="body"
 	elseif(mode =="body")then
 	mode ="ball"
@@ -185,34 +180,41 @@ function overlap(x, y, r)
 	end
 	return retval
 end
-function overlap2(x, y, r,c)
+function overlapB(x, y, r,c)
 	i = 1
 	retval = {false,0}
-	while i <= #balls do
-		if(i~=c)then
+	while i < #balls do
+	if(i~=c) then
 		x1=balls[i][1]
 		y1=balls[i][2]
-		print(math.sqrt((x1-x)^2+(y1-y)^2))
-		if(math.sqrt((x1-x)^2+(y1-y)^2)<=balls[i][3]+r) then
+		if(((x1-x)^2+(y1-y)^2)<=(balls[i][3]+r)^2) then
 			retval = {true,i}
-			print("RETVAL "..retval[2])
 		end
 		end
 		i=i+1
 	end
 	return retval
 end
-function bodyCollision(i)
-	ov = overlap2(balls[i][1],balls[i][2],balls[i][3],i)
-	if(ov[1] and #balls>1)then
-	print("Here")
-		balls[i].v.u = balls[i].v.u*balls[i][3]-balls[ov[2]].v.u*balls[ov[2]][3]
-		balls[ov[2]].v.u = balls[i].v.u*balls[i][3]-balls[ov[2]].v.u*balls[ov[2]][3]
-		balls[i].v.l = balls[i].v.l*balls[i][3]-balls[ov[2]].v.l*balls[ov[2]][3]
-		balls[ov[2]].v.l = balls[i].v.l*balls[i][3]-balls[ov[2]].v.l*balls[ov[2]][3]
-	end
-	end
-		
+function collision(c)
+		print(balls[#balls][1])
+		retval = overlapB(balls[c][1],balls[c][2],balls[c][3],c)
+		if(retval[1])then
+			b2 = retval[2]
+			b2m=balls[b2][3]*balls[b2][3]*math.pi
+			cm=balls[c][3]*balls[c][3]*math.pi
+			cvy = balls[c].v.u
+			cvx = balls[c].v.l
+			b2vy = balls[b2].v.u
+			b2vx = balls[b2].v.l
+			xVectorC=((cm-b2m)/(cm+b2m))*cvx+((2*b2m)/(cm+b2m))*b2vx
+			yVectorC= ((cm-b2m)/(cm+b2m))*cvy+((2*b2m)/(cm+b2m))*b2vy
+			xVectorB2=((b2m-cm)/(cm+b2m))*b2vx+((2*cm)/(cm+b2m))*cvx
+			yVectorB2=((b2m-cm)/(cm+b2m))*b2vy+((2*cm)/(cm+b2m))*cvy
+			balls[c].v=vectorMake(yVectorC,xVectorC)
+			balls[b2].v=vectorMake(yVectorB2,xVectorB2)
+			
+		end
+end
 function love.load(arg)
 
 end
@@ -223,7 +225,7 @@ function love.update(dt)
 place(dt)
 local c=1
 while(c<=#balls)do
-bodyCollision(c)
+collision(c)
 gravEffect(balls[c],c)
 --doesReflect()
 ballMove(dt,balls[c])
@@ -256,8 +258,7 @@ end
 end
 x1,y1,x2,y2=0
 function love.mousepressed(x, y, button)
-print(overlap(x,y,radius)[1])
-
+print()
 if(mode=="ball" and button == 1 and overlap(x,y,radius)[1] ~= true)then
 	table.insert(gravpts,{x, y, radius})
 elseif(mode=="body" and button==1)then
